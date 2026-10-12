@@ -889,7 +889,7 @@
             void loadBoard();
         });
         supabaseClient.auth.getSession().then(({ data, error }) => {
-            if (error) {
+            if (error) { 
                 console.error("Could not restore the Supabase session.", error);
                 showToast("Could not restore your sign-in session.");
             }
