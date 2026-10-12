@@ -9,11 +9,11 @@
         :root {
             color-scheme: dark;
             --page: #10131b;
-            --surface: #171b26;
-            --surface-raised: #1c2230;
-            --border: #2a3141;
+            --surface: rgba(27, 31, 45, .62);
+            --surface-raised: rgba(37, 42, 59, .72);
+            --border: rgba(255, 255, 255, .16);
             --text: #f3f5fb;
-            --muted: #a0a8ba;
+            --muted: #c0c6d5;
             --accent: #9d8cff;
             --accent-bright: #b2a6ff;
             --green: #79d6ad;
@@ -26,10 +26,12 @@
         * { box-sizing: border-box; }
 
         body {
+            position: relative;
+            isolation: isolate;
             min-width: 320px;
             margin: 0;
             background:
-                radial-gradient(ellipse at 82% -12%, rgba(121, 92, 235, .17), transparent 36rem),
+                radial-gradient(ellipse at 82% -12%, rgba(121, 92, 235, .25), transparent 36rem),
                 var(--page);
             color: var(--text);
             font: 15px/1.6 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -38,12 +40,24 @@
         .background-video {
             position: fixed;
             inset: 0;
-            z-index: -1;
+            z-index: 0;
             width: 100%;
             height: 100%;
             object-fit: cover;
-            opacity: .35;
+            opacity: .075;
             pointer-events: none;
+        }
+
+        .site-header, main, .footer {
+            position: relative;
+            z-index: 1;
+        }
+
+        .site-header {
+            border-bottom: 1px solid rgba(255,255,255,.14);
+            background: rgba(12, 15, 24, .44);
+            backdrop-filter: blur(24px) saturate(155%);
+            -webkit-backdrop-filter: blur(24px) saturate(155%);
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -59,7 +73,6 @@
         }
 
         .shell { width: min(var(--content-width), calc(100% - 40px)); margin: 0 auto; }
-        .site-header { border-bottom: 1px solid rgba(255,255,255,.07); }
         .nav {
             min-height: 78px;
             display: flex;
@@ -75,12 +88,21 @@
         .brand-name { font-weight: 800; letter-spacing: -.025em; }
         .nav-links { display: flex; align-items: center; gap: 7px; }
         .nav-link, .profile-button {
-            border: 0; border-radius: 10px; padding: 9px 13px;
+            border: 1px solid transparent; border-radius: 999px; padding: 9px 13px;
             color: var(--muted); background: transparent; text-decoration: none; cursor: pointer;
+            transition: color .38s ease, background .38s ease, border-color .38s ease, box-shadow .42s ease, transform .42s cubic-bezier(.2,.8,.2,1);
         }
-        .nav-link:hover, .nav-link.active { color: var(--text); background: rgba(255,255,255,.07); }
-        .profile-button { color: var(--text); border: 1px solid var(--border); background: var(--surface); }
-        .profile-button:hover { border-color: var(--accent); }
+        .nav-link:hover, .nav-link.active {
+            color: var(--text); border-color: rgba(255,255,255,.15);
+            background: rgba(255,255,255,.1); box-shadow: inset 0 1px rgba(255,255,255,.12);
+        }
+        .profile-button {
+            color: var(--text); border-color: rgba(255,255,255,.2); background: rgba(255,255,255,.1);
+            box-shadow: inset 0 1px rgba(255,255,255,.14), 0 5px 18px rgba(0,0,0,.16);
+            backdrop-filter: blur(16px) saturate(150%);
+            -webkit-backdrop-filter: blur(16px) saturate(150%);
+        }
+        .profile-button:hover { border-color: rgba(178,166,255,.7); background: rgba(178,166,255,.14); }
 
         main { padding: 46px 0 80px; }
         .hero { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 30px; }
@@ -90,18 +112,34 @@
         .hero-actions { display: flex; flex-wrap: wrap; gap: 10px; }
         .button {
             min-height: 42px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-            padding: 9px 15px; border: 1px solid var(--border); border-radius: 11px;
-            color: var(--text); background: var(--surface-raised); font-weight: 700; cursor: pointer;
-            text-decoration: none; transition: transform .15s ease, border-color .15s ease, background .15s ease;
+            padding: 9px 15px; border: 1px solid rgba(255,255,255,.18); border-radius: 999px;
+            color: var(--text); background: rgba(255,255,255,.1); font-weight: 700; cursor: pointer;
+            text-decoration: none;             transition: transform .42s cubic-bezier(.2,.8,.2,1), border-color .38s ease, background .38s ease, box-shadow .42s ease;
+            box-shadow: inset 0 1px rgba(255,255,255,.13), 0 7px 20px rgba(0,0,0,.18);
+            backdrop-filter: blur(16px) saturate(145%);
+            -webkit-backdrop-filter: blur(16px) saturate(145%);
         }
-        .button:hover { transform: translateY(-1px); border-color: #5a527b; }
-        .button.primary { color: #171426; border-color: transparent; background: var(--accent-bright); }
-        .button.primary:hover { background: #c1b8ff; }
-        .button.ghost { background: transparent; }
-        .button.danger { color: var(--danger); }
+        .button:hover { transform: translateY(-2px) scale(1.045); border-color: rgba(210,202,255,.65); background: rgba(255,255,255,.16); }
+        .button.primary {
+            color: #171426; border-color: rgba(255,255,255,.38);
+            background: linear-gradient(145deg, rgba(218,211,255,.98), rgba(157,140,255,.9));
+        }
+        .button.primary:hover { background: linear-gradient(145deg, #e8e3ff, #b2a6ff); }
+        .button.ghost { background: rgba(255,255,255,.055); }
+        .button.danger { color: #ffb1ba; }
 
         .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 26px 0 30px; }
-        .stat { padding: 17px 19px; border: 1px solid var(--border); border-radius: 15px; background: rgba(23,27,38,.75); }
+        .stat {
+            position: relative;
+            isolation: isolate;
+            transform-style: preserve-3d;
+            padding: 17px 19px; border: 1px solid var(--border); border-radius: 18px;
+            background: linear-gradient(145deg, rgba(255,255,255,.13), rgba(255,255,255,.045) 48%, rgba(20,24,38,.48));
+            box-shadow: inset 0 1px rgba(255,255,255,.2), 0 12px 30px rgba(0,0,0,.16);
+            backdrop-filter: blur(22px) saturate(145%);
+            -webkit-backdrop-filter: blur(22px) saturate(145%);
+            transition: transform .72s cubic-bezier(.2,1,.3,1), border-color .55s ease, box-shadow .72s ease;
+        }
         .stat-label { color: var(--muted); font-size: .82rem; }
         .stat-value { margin-top: 3px; font-size: 1.5rem; font-weight: 800; letter-spacing: -.035em; }
         .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 18px; margin: 38px 0 15px; }
@@ -112,7 +150,10 @@
         .search { flex: 1; }
         input, select, textarea {
             width: 100%; min-height: 43px; padding: 10px 12px; border: 1px solid var(--border);
-            border-radius: 10px; color: var(--text); background: #11151f;
+            border-radius: 12px; color: var(--text); background: rgba(10,13,22,.5);
+            box-shadow: inset 0 1px 5px rgba(0,0,0,.2);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
         }
         textarea { min-height: 98px; resize: vertical; }
         input::placeholder, textarea::placeholder { color: #717b90; }
@@ -121,8 +162,28 @@
 
         .level-list { display: grid; gap: 14px; }
         .level-card {
+            position: relative;
+            isolation: isolate;
+            transform-style: preserve-3d;
             padding: 20px; border: 1px solid var(--border); border-radius: var(--radius);
-            background: linear-gradient(135deg, rgba(28,34,48,.97), rgba(23,27,38,.97));
+            background:
+                linear-gradient(145deg, rgba(255,255,255,.14), transparent 36%),
+                linear-gradient(135deg, rgba(33,39,57,.66), rgba(20,24,38,.58));
+            box-shadow: inset 0 1px rgba(255,255,255,.2), 0 16px 42px rgba(0,0,0,.22);
+            backdrop-filter: blur(24px) saturate(150%);
+            -webkit-backdrop-filter: blur(24px) saturate(150%);
+            transition: transform .72s cubic-bezier(.2,1,.3,1), border-color .55s ease, box-shadow .72s ease;
+        }
+        .level-card:hover { transform: perspective(1000px) rotateX(var(--tilt-y, 0deg)) rotateY(var(--tilt-x, 0deg)) translateY(-5px) scale(1.012); border-color: rgba(210,202,255,.48); box-shadow: inset 0 1px rgba(255,255,255,.23), 0 22px 54px rgba(0,0,0,.32); }
+        .level-image {
+            display: block;
+            width: 100%;
+            max-height: 300px;
+            margin-bottom: 17px;
+            border: 1px solid rgba(255,255,255,.16);
+            border-radius: 14px;
+            object-fit: cover;
+            background: rgba(0,0,0,.18);
         }
         .level-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
         .level-name-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
@@ -149,7 +210,17 @@
         .empty { padding: 24px; border: 1px dashed var(--border); border-radius: 14px; color: var(--muted); text-align: center; }
 
         .panel-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-        .panel { padding: 22px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+        .panel {
+            position: relative;
+            isolation: isolate;
+            transform-style: preserve-3d;
+            padding: 22px; border: 1px solid var(--border); border-radius: var(--radius);
+            background: linear-gradient(145deg, rgba(255,255,255,.12), transparent 42%), var(--surface);
+            box-shadow: inset 0 1px rgba(255,255,255,.17), 0 15px 38px rgba(0,0,0,.2);
+            backdrop-filter: blur(24px) saturate(150%);
+            -webkit-backdrop-filter: blur(24px) saturate(150%);
+            transition: transform .72s cubic-bezier(.2,1,.3,1), border-color .55s ease, box-shadow .72s ease;
+        }
         .panel h3 { margin: 0; font-size: 1.12rem; }
         .panel > p { margin: 5px 0 18px; color: var(--muted); font-size: .88rem; }
         .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
@@ -159,13 +230,39 @@
         .form-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; }
         .fine-print { margin: 12px 0 0; color: var(--muted); font-size: .77rem; }
         .pending-list { display: grid; gap: 9px; }
-        .pending-item { padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; background: #131722; }
+        .pending-item, .admin-card {
+            position: relative;
+            isolation: isolate;
+            transform-style: preserve-3d;
+            padding: 14px; border: 1px solid rgba(255,255,255,.15); border-radius: 15px;
+            background: linear-gradient(145deg, rgba(255,255,255,.1), transparent 55%), rgba(20,24,38,.62);
+            box-shadow: inset 0 1px rgba(255,255,255,.14), 0 10px 28px rgba(0,0,0,.18);
+            backdrop-filter: blur(20px) saturate(140%);
+            -webkit-backdrop-filter: blur(20px) saturate(140%);
+            transition: transform .72s cubic-bezier(.2,1,.3,1), border-color .55s ease, box-shadow .72s ease;
+        }
+        .stat::before, .level-card::before, .panel::before, .pending-item::before, .admin-card::before {
+            content: "";
+            position: absolute;
+            z-index: 0;
+            inset: 0;
+            border-radius: inherit;
+            background: radial-gradient(ellipse 260px 190px at var(--pointer-x, 50%) var(--pointer-y, 50%), rgba(206, 197, 255, .2), transparent 76%);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .65s ease;
+        }
+        .stat > *, .level-card > *, .panel > *, .pending-item > *, .admin-card > * {
+            position: relative;
+            z-index: 1;
+        }
+        .empty { transition: border-color .4s ease, background .4s ease, transform .48s cubic-bezier(.2,.8,.2,1); }
         .pending-title { font-weight: 700; }
         .pending-meta { margin-top: 3px; color: var(--muted); font-size: .8rem; }
         .pending-badge { float: right; color: var(--amber); font-size: .73rem; font-weight: 800; }
         .admin-grid { margin-bottom: 28px; }
         .admin-list { display: grid; gap: 12px; }
-        .admin-card { padding: 16px; border: 1px solid var(--border); border-radius: 14px; background: #131722; }
+        .admin-card { padding: 16px; }
         .admin-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
         .admin-card-title { font-weight: 750; }
         .admin-card-meta { margin-top: 3px; color: var(--muted); font-size: .8rem; }
@@ -180,8 +277,11 @@
 
         dialog {
             width: min(470px, calc(100% - 30px)); padding: 0; border: 1px solid var(--border);
-            border-radius: 18px; color: var(--text); background: var(--surface);
-            box-shadow: 0 24px 90px rgba(0,0,0,.55);
+            border-radius: 22px; color: var(--text);
+            background: linear-gradient(145deg, rgba(255,255,255,.14), transparent 48%), rgba(22,26,40,.88);
+            box-shadow: inset 0 1px rgba(255,255,255,.2), 0 24px 90px rgba(0,0,0,.55);
+            backdrop-filter: blur(30px) saturate(155%);
+            -webkit-backdrop-filter: blur(30px) saturate(155%);
         }
         dialog::backdrop { background: rgba(4,6,12,.74); backdrop-filter: blur(4px); }
         .dialog-inner { padding: 24px; }
@@ -193,9 +293,45 @@
         .toast {
             position: fixed; right: 20px; bottom: 20px; z-index: 10; max-width: min(420px, calc(100vw - 40px));
             padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px;
-            color: var(--text); background: #202637; box-shadow: 0 12px 40px rgba(0,0,0,.4);
+            color: var(--text); background: rgba(32,38,55,.84); box-shadow: inset 0 1px rgba(255,255,255,.14), 0 12px 40px rgba(0,0,0,.4);
+            backdrop-filter: blur(22px) saturate(145%);
+            -webkit-backdrop-filter: blur(22px) saturate(145%);
         }
         [hidden] { display: none !important; }
+
+        @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+            .stat:hover, .panel:hover, .pending-item:hover, .admin-card:hover {
+                transform: perspective(1000px) rotateX(var(--tilt-y, 0deg)) rotateY(var(--tilt-x, 0deg)) translateY(-4px) scale(1.015);
+                border-color: rgba(210,202,255,.42);
+                box-shadow: inset 0 1px rgba(255,255,255,.22), 0 20px 46px rgba(0,0,0,.29);
+            }
+            .stat:hover::before, .level-card:hover::before, .panel:hover::before,
+            .pending-item:hover::before, .admin-card:hover::before { opacity: 1; }
+            input:hover, select:hover, textarea:hover {
+                border-color: rgba(210,202,255,.48);
+                background-color: rgba(29,32,49,.66);
+            }
+            .nav-link:hover, .profile-button:hover { transform: translateY(-2px) scale(1.04); }
+            .brand-mark { transition: transform .5s cubic-bezier(.2,.8,.2,1); }
+            .brand:hover .brand-mark { transform: rotate(-7deg) scale(1.08); }
+            .empty:hover { transform: scale(1.008); border-color: rgba(210,202,255,.4); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                scroll-behavior: auto !important;
+                animation-duration: .01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: .01ms !important;
+            }
+        }
+
+        @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+            .site-header, .profile-button, .button, .stat, input, select, textarea,
+            .level-card, .panel, .pending-item, .admin-card, dialog, .toast {
+                background-color: rgba(20,24,38,.94);
+            }
+        }
 
         @media (max-width: 720px) {
             .nav { min-height: 68px; flex-wrap: wrap; padding: 12px 0; }
@@ -354,6 +490,7 @@
                             <div class="field"><label for="adminLevelCreator">Creator</label><input id="adminLevelCreator" name="creator" maxlength="60"></div>
                             <div class="field"><label for="adminLevelVerifier">Verifier</label><input id="adminLevelVerifier" name="verifier" maxlength="60"></div>
                             <div class="field full"><label for="adminLevelDescription">Description</label><textarea id="adminLevelDescription" name="description" maxlength="500"></textarea></div>
+                            <div class="field full"><label for="adminLevelImage">Image filename in the GitHub Pages root (optional)</label><input id="adminLevelImage" name="image_path" maxlength="180" placeholder="e.g. level-preview.png"><span class="fine-print">Upload the image beside index.html. Enter just its filename, not a URL or folder path.</span></div>
                             <div class="field full"><label for="adminLevelVideo">Verification video URL</label><input id="adminLevelVideo" name="video_url" type="url" placeholder="https://…"></div>
                         </div>
                         <div class="form-actions"><span class="profile-summary">Published immediately</span><button class="button primary" type="submit">Publish challenge</button></div>
@@ -427,6 +564,19 @@
             }
         }
 
+        function validImageFilename(value) {
+            const filename = String(value || "").trim();
+            if (!filename) return "";
+            return /^(?!\.{1,2}$)[A-Za-z0-9][A-Za-z0-9 _().-]{0,175}\.(?:png|jpe?g|webp|gif|avif)$/i.test(filename)
+                ? filename
+                : null;
+        }
+
+        function imageSource(filename) {
+            const safeFilename = validImageFilename(filename);
+            return safeFilename ? encodeURIComponent(safeFilename) : "";
+        }
+
         function safeLink(value, label) {
             const url = validHttpUrl(value);
             return url
@@ -483,7 +633,9 @@
                         safeLink(level.video, "Verification video ↗"),
                         level.levelId ? `<span class="section-note">Level ID: ${escapeHtml(level.levelId)}</span>` : ""
                     ].filter(Boolean).join("");
+                    const imageSrc = imageSource(level.imagePath);
                     return `<article class="level-card">
+                        ${imageSrc ? `<img class="level-image" src="${escapeHtml(imageSrc)}" alt="${escapeHtml(level.name)} preview" loading="lazy">` : ""}
                         <div class="level-top">
                             <div>
                                 <div class="level-name-row"><h3 class="level-name">${escapeHtml(level.name)}</h3><span class="rank">#${escapeHtml(level.rank)}</span><span class="difficulty">${escapeHtml(level.difficulty || "Unrated")}</span></div>
@@ -498,6 +650,9 @@
                         <div class="records"><h4 class="records-heading">Victors &amp; records · ${records.length}</h4>${recordMarkup}</div>
                     </article>`;
                 }).join("");
+                levelList.querySelectorAll(".level-image").forEach(image => {
+                    image.addEventListener("error", () => { image.hidden = true; }, { once: true });
+                });
             }
             document.getElementById("levelCount").textContent = levels.length;
             document.getElementById("recordCount").textContent = levels.reduce((count, level) => count + (Array.isArray(level.records) ? level.records.length : 0), 0);
@@ -573,6 +728,7 @@
                 levelId: level.level_id || "",
                 description: level.description || "",
                 video: level.video_url || "",
+                imagePath: level.image_path || "",
                 records: recordsResult.data
                     .filter(record => record.level_id === level.id)
                     .map(record => ({ player: record.player_name, percent: record.percent, proof: record.proof_url }))
@@ -672,8 +828,9 @@
             const name = String(values.name || "").trim();
             const rank = Number(values.rank);
             const video = String(values.video_url || "").trim();
-            if (!name || !Number.isInteger(rank) || rank < 1 || (video && !validHttpUrl(video))) {
-                showToast("Enter a name, a positive whole-number rank, and a valid video URL.");
+            const imagePath = validImageFilename(values.image_path);
+            if (!name || !Number.isInteger(rank) || rank < 1 || (video && !validHttpUrl(video)) || imagePath === null) {
+                showToast("Enter a name, a positive whole-number rank, a valid video URL, and an image filename with a supported extension.");
                 return;
             }
             const row = {
@@ -685,6 +842,7 @@
                 creator: String(values.creator || "Unknown").trim() || "Unknown",
                 verifier: String(values.verifier || "Frigg10").trim() || "Frigg10",
                 description: String(values.description || "").trim(),
+                image_path: imagePath,
                 video_url: validHttpUrl(video)
             };
             const { error } = await supabaseClient.from("challenge_levels").insert(row);
@@ -705,8 +863,9 @@
             const formData = new FormData(form);
             const rank = Number(formData.get("rank"));
             const video = String(formData.get("video_url") || "").trim();
-            if (!Number.isInteger(rank) || rank < 1 || (video && !validHttpUrl(video))) {
-                showToast("Enter a positive whole-number rank and a valid video URL.");
+            const imagePath = validImageFilename(formData.get("image_path"));
+            if (!Number.isInteger(rank) || rank < 1 || (video && !validHttpUrl(video)) || imagePath === null) {
+                showToast("Enter a positive whole-number rank, a valid video URL, and an image filename with a supported extension.");
                 return;
             }
             const changes = {
@@ -717,6 +876,7 @@
                 creator: String(formData.get("creator") || "Unknown").trim() || "Unknown",
                 verifier: String(formData.get("verifier") || "Pending").trim() || "Pending",
                 description: String(formData.get("description") || "").trim(),
+                image_path: imagePath,
                 video_url: validHttpUrl(video)
             };
             if (!changes.name) {
@@ -809,6 +969,7 @@
                             <div class="field"><label>Creator</label><input name="creator" maxlength="60" value="${escapeHtml(level.creator)}"></div>
                             <div class="field"><label>Verifier</label><input name="verifier" maxlength="60" value="${escapeHtml(level.verifier)}"></div>
                             <div class="field full"><label>Description</label><textarea name="description" maxlength="500">${escapeHtml(level.description)}</textarea></div>
+                            <div class="field full"><label>Image filename in GitHub Pages root</label><input name="image_path" maxlength="180" value="${escapeHtml(level.imagePath)}" placeholder="e.g. level-preview.png"><span class="fine-print">Upload beside index.html and enter only the filename.</span></div>
                             <div class="field full"><label>Verification video URL</label><input name="video_url" type="url" value="${escapeHtml(level.video)}"></div>
                         </div>
                         <div class="admin-actions"><button class="button primary" type="submit">Save changes</button><button class="button reject" type="button" data-delete-level="${escapeHtml(level.id)}">Delete challenge</button></div>
@@ -905,6 +1066,21 @@
         document.getElementById("searchLevels").addEventListener("input", renderLevels);
         document.getElementById("difficultyFilter").addEventListener("change", renderLevels);
         document.getElementById("sortLevels").addEventListener("change", renderLevels);
+
+        const hoverMotion = window.matchMedia("(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)");
+        if (hoverMotion.matches) {
+            document.addEventListener("pointermove", event => {
+                const surface = event.target.closest(".stat, .level-card, .panel, .pending-item, .admin-card");
+                if (!surface) return;
+                const bounds = surface.getBoundingClientRect();
+                const x = (event.clientX - bounds.left) / bounds.width;
+                const y = (event.clientY - bounds.top) / bounds.height;
+                surface.style.setProperty("--pointer-x", `${(x * 100).toFixed(1)}%`);
+                surface.style.setProperty("--pointer-y", `${(y * 100).toFixed(1)}%`);
+                surface.style.setProperty("--tilt-x", `${((x - .5) * 1.2).toFixed(2)}deg`);
+                surface.style.setProperty("--tilt-y", `${((.5 - y) * 1.2).toFixed(2)}deg`);
+            }, { passive: true });
+        }
 
         supabaseClient.auth.onAuthStateChange((_event, session) => {
             currentUser = session?.user || null;
