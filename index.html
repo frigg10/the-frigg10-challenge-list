@@ -175,16 +175,48 @@
             transition: transform .72s cubic-bezier(.2,1,.3,1), border-color .55s ease, box-shadow .72s ease;
         }
         .level-card:hover { transform: perspective(1000px) rotateX(var(--tilt-y, 0deg)) rotateY(var(--tilt-x, 0deg)) translateY(-5px) scale(1.012); border-color: rgba(210,202,255,.48); box-shadow: inset 0 1px rgba(255,255,255,.23), 0 22px 54px rgba(0,0,0,.32); }
+        .level-image-preview {
+            margin: 0 0 17px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,.16);
+            border-radius: 14px;
+            background: rgba(0,0,0,.18);
+        }
+        .level-image-preview figcaption {
+            padding: 6px 12px;
+            color: var(--muted);
+            background: rgba(255,255,255,.045);
+            font-size: .74rem;
+            font-weight: 750;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
         .level-image {
             display: block;
             width: 100%;
             max-height: 300px;
-            margin-bottom: 17px;
-            border: 1px solid rgba(255,255,255,.16);
-            border-radius: 14px;
             object-fit: cover;
-            background: rgba(0,0,0,.18);
         }
+        .image-preview {
+            display: grid;
+            place-items: center;
+            min-height: 90px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,.14);
+            border-radius: 12px;
+            color: var(--muted);
+            background: rgba(10,13,22,.38);
+            font-size: .82rem;
+            text-align: center;
+        }
+        .image-preview img {
+            display: block;
+            width: 100%;
+            max-height: 220px;
+            object-fit: contain;
+        }
+        .image-preview img[hidden] { display: none; }
+        .image-preview-status { padding: 18px; }
         .level-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
         .level-name-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
         .level-name { margin: 0; font-size: 1.25rem; letter-spacing: -.025em; }
@@ -490,7 +522,7 @@
                             <div class="field"><label for="adminLevelCreator">Creator</label><input id="adminLevelCreator" name="creator" maxlength="60"></div>
                             <div class="field"><label for="adminLevelVerifier">Verifier</label><input id="adminLevelVerifier" name="verifier" maxlength="60"></div>
                             <div class="field full"><label for="adminLevelDescription">Description</label><textarea id="adminLevelDescription" name="description" maxlength="500"></textarea></div>
-                            <div class="field full"><label for="adminLevelImage">Image filename in the GitHub Pages root (optional)</label><input id="adminLevelImage" name="image_path" maxlength="180" placeholder="e.g. level-preview.png"><span class="fine-print">Upload the image beside index.html. Enter just its filename, not a URL or folder path.</span></div>
+                            <div class="field full"><label for="adminLevelImage">Image filename in the GitHub Pages root (optional)</label><input id="adminLevelImage" name="image_path" maxlength="180" placeholder="e.g. level-preview.png"><span class="fine-print">Upload the image beside index.html. Enter just its filename, not a URL or folder path.</span><span class="fine-print">Image preview</span><div class="image-preview" data-image-preview aria-live="polite"><span class="image-preview-status">Enter a filename to preview the challenge image.</span><img alt="Challenge image preview" hidden></div></div>
                             <div class="field full"><label for="adminLevelVideo">Verification video URL</label><input id="adminLevelVideo" name="video_url" type="url" placeholder="https://…"></div>
                         </div>
                         <div class="form-actions"><span class="profile-summary">Published immediately</span><button class="button primary" type="submit">Publish challenge</button></div>
@@ -577,6 +609,31 @@
             return safeFilename ? encodeURIComponent(safeFilename) : "";
         }
 
+        function updateImagePreview(input) {
+            const preview = input.closest(".field")?.querySelector("[data-image-preview]");
+            if (!preview) return;
+            const image = preview.querySelector("img");
+            const status = preview.querySelector(".image-preview-status");
+            const filename = String(input.value || "").trim();
+            const src = imageSource(filename);
+
+            image.hidden = !src;
+            status.hidden = false;
+            status.textContent = !filename
+                ? "Enter a filename to preview the challenge image."
+                : src
+                    ? "Loading image preview…"
+                    : "Use a filename ending in PNG, JPG, WEBP, GIF, or AVIF.";
+            image.onload = () => { status.hidden = true; };
+            image.onerror = () => {
+                image.hidden = true;
+                status.hidden = false;
+                status.textContent = "Image not found beside index.html.";
+            };
+            if (src) image.src = src;
+            else image.removeAttribute("src");
+        }
+
         function safeLink(value, label) {
             const url = validHttpUrl(value);
             return url
@@ -635,7 +692,7 @@
                     ].filter(Boolean).join("");
                     const imageSrc = imageSource(level.imagePath);
                     return `<article class="level-card">
-                        ${imageSrc ? `<img class="level-image" src="${escapeHtml(imageSrc)}" alt="${escapeHtml(level.name)} preview" loading="lazy">` : ""}
+                        ${imageSrc ? `<figure class="level-image-preview"><figcaption>Image Preview</figcaption><img class="level-image" src="${escapeHtml(imageSrc)}" alt="${escapeHtml(level.name)} preview" loading="lazy"></figure>` : ""}
                         <div class="level-top">
                             <div>
                                 <div class="level-name-row"><h3 class="level-name">${escapeHtml(level.name)}</h3><span class="rank">#${escapeHtml(level.rank)}</span><span class="difficulty">${escapeHtml(level.difficulty || "Unrated")}</span></div>
@@ -651,7 +708,7 @@
                     </article>`;
                 }).join("");
                 levelList.querySelectorAll(".level-image").forEach(image => {
-                    image.addEventListener("error", () => { image.hidden = true; }, { once: true });
+                    image.addEventListener("error", () => { image.closest(".level-image-preview").hidden = true; }, { once: true });
                 });
             }
             document.getElementById("levelCount").textContent = levels.length;
@@ -856,6 +913,10 @@
             await loadBoard();
         });
 
+        document.getElementById("adminLevelImage").addEventListener("input", event => {
+            updateImagePreview(event.currentTarget);
+        });
+
         async function saveEditedLevel(event) {
             const form = event.target.closest("form[data-level-id]");
             if (!form || !isAdmin) return;
@@ -894,6 +955,10 @@
         }
 
         document.getElementById("adminLevelsList").addEventListener("submit", saveEditedLevel);
+
+        document.getElementById("adminLevelsList").addEventListener("input", event => {
+            if (event.target.matches('input[name="image_path"]')) updateImagePreview(event.target);
+        });
 
         document.getElementById("adminLevelsList").addEventListener("click", async event => {
             const button = event.target.closest("button[data-delete-level]");
@@ -969,13 +1034,14 @@
                             <div class="field"><label>Creator</label><input name="creator" maxlength="60" value="${escapeHtml(level.creator)}"></div>
                             <div class="field"><label>Verifier</label><input name="verifier" maxlength="60" value="${escapeHtml(level.verifier)}"></div>
                             <div class="field full"><label>Description</label><textarea name="description" maxlength="500">${escapeHtml(level.description)}</textarea></div>
-                            <div class="field full"><label>Image filename in GitHub Pages root</label><input name="image_path" maxlength="180" value="${escapeHtml(level.imagePath)}" placeholder="e.g. level-preview.png"><span class="fine-print">Upload beside index.html and enter only the filename.</span></div>
+                            <div class="field full"><label>Image filename in GitHub Pages root</label><input name="image_path" maxlength="180" value="${escapeHtml(level.imagePath)}" placeholder="e.g. level-preview.png"><span class="fine-print">Upload beside index.html and enter only the filename.</span><span class="fine-print">Image preview</span><div class="image-preview" data-image-preview aria-live="polite"><span class="image-preview-status">Enter a filename to preview the challenge image.</span><img alt="Challenge image preview" hidden></div></div>
                             <div class="field full"><label>Verification video URL</label><input name="video_url" type="url" value="${escapeHtml(level.video)}"></div>
                         </div>
                         <div class="admin-actions"><button class="button primary" type="submit">Save changes</button><button class="button reject" type="button" data-delete-level="${escapeHtml(level.id)}">Delete challenge</button></div>
                     </form>
                 </article>`).join("")
                 : '<div class="empty">No challenges to manage.</div>';
+            list.querySelectorAll('input[name="image_path"]').forEach(updateImagePreview);
         }
 
         const dialog = document.getElementById("profileDialog");
