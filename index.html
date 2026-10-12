@@ -142,6 +142,28 @@
         }
         .stat-label { color: var(--muted); font-size: .82rem; }
         .stat-value { margin-top: 3px; font-size: 1.5rem; font-weight: 800; letter-spacing: -.035em; }
+        .leaderboard-list { display: grid; gap: 10px; }
+        .player-card, .clan-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            width: 100%;
+            padding: 15px 18px;
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            color: var(--text);
+            background: linear-gradient(145deg, rgba(255,255,255,.1), transparent 58%), rgba(20,24,38,.52);
+            text-align: left;
+        }
+        .player-card { cursor: pointer; transition: transform .36s ease, border-color .36s ease, background .36s ease; }
+        .player-card:hover { transform: translateY(-2px); border-color: rgba(178,166,255,.48); background-color: rgba(255,255,255,.08); }
+        .leaderboard-position { min-width: 42px; color: var(--accent-bright); font-weight: 850; }
+        .leaderboard-identity { display: grid; flex: 1; gap: 2px; }
+        .leaderboard-name { font-weight: 760; }
+        .leaderboard-clan, .leaderboard-country { color: var(--muted); font-size: .82rem; }
+        .leaderboard-score { white-space: nowrap; font-weight: 850; }
+        .player-card:focus-visible { outline: 3px solid rgba(178,166,255,.8); outline-offset: 3px; }
         .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 18px; margin: 38px 0 15px; }
         h2 { margin: 0; font-size: 1.35rem; letter-spacing: -.025em; }
         .section-note { margin: 4px 0 0; color: var(--muted); font-size: .9rem; }
@@ -317,6 +339,17 @@
         }
         dialog::backdrop { background: rgba(4,6,12,.74); backdrop-filter: blur(4px); }
         .dialog-inner { padding: 24px; }
+        .profile-dialog-inner { max-height: min(82vh, 760px); overflow-y: auto; }
+        .profile-detail-head { display: grid; gap: 6px; margin-bottom: 16px; }
+        .profile-detail-name { margin: 0; font-size: 1.5rem; }
+        .profile-records { display: grid; gap: 8px; margin-top: 12px; }
+        .profile-record { display: grid; gap: 3px; padding: 11px 12px; border: 1px solid rgba(255,255,255,.1); border-radius: 12px; background: rgba(255,255,255,.045); }
+        .profile-record-meta { color: var(--muted); font-size: .8rem; }
+        .clan-tag { color: var(--accent-bright); font-weight: 900; letter-spacing: .03em; }
+        .clan-controls { display: grid; gap: 10px; margin: 15px 0; }
+        .clan-create-grid { display: grid; grid-template-columns: 1fr 1.4fr auto; align-items: end; gap: 9px; }
+        .clan-create-grid .field { min-width: 0; }
+        .clan-create-grid .button { white-space: nowrap; }
         .dialog-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; margin-bottom: 18px; }
         .dialog-head h2 { font-size: 1.35rem; }
         .icon-button { width: 34px; height: 34px; border: 1px solid var(--border); border-radius: 9px; color: var(--muted); background: transparent; cursor: pointer; }
@@ -385,6 +418,8 @@
             .form-grid { grid-template-columns: 1fr; }
             .field.full { grid-column: auto; }
             .level-card, .panel { padding: 16px; }
+            .player-card, .clan-card { padding: 12px; gap: 10px; }
+            .clan-create-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -426,6 +461,26 @@
             <div class="stat"><div class="stat-label">Listed challenges</div><div class="stat-value" id="levelCount">0</div></div>
             <div class="stat"><div class="stat-label">Verified records</div><div class="stat-value" id="recordCount">0</div></div>
             <div class="stat"><div class="stat-label">Awaiting review</div><div class="stat-value" id="pendingCount">0</div></div>
+        </section>
+
+        <section aria-labelledby="players-heading">
+            <div class="section-heading">
+                <div>
+                    <h2 id="players-heading">Player leaderboard</h2>
+                    <p class="section-note">Approved 100% completions earn 1,000 points for top 10, 500 for top 50, and 100 for top 100 (once per level). Click a player to see all their approved completions.</p>
+                </div>
+            </div>
+            <div class="leaderboard-list" id="playerLeaderboard" aria-live="polite"></div>
+        </section>
+
+        <section aria-labelledby="clans-heading">
+            <div class="section-heading">
+                <div>
+                    <h2 id="clans-heading">Clan leaderboard</h2>
+                    <p class="section-note">Clan scores combine the points of all current members.</p>
+                </div>
+            </div>
+            <div class="leaderboard-list" id="clanLeaderboard" aria-live="polite"></div>
         </section>
 
         <section aria-labelledby="levels-heading">
@@ -556,6 +611,15 @@
             <div id="profileContents"></div>
         </div>
     </dialog>
+    <dialog id="playerProfileDialog" aria-labelledby="playerProfileTitle">
+        <div class="dialog-inner profile-dialog-inner">
+            <div class="dialog-head">
+                <div><div class="eyebrow">Player profile</div><h2 id="playerProfileTitle">Profile</h2></div>
+                <button class="icon-button" id="closePlayerProfile" type="button" aria-label="Close profile">✕</button>
+            </div>
+            <div id="playerProfileContents"></div>
+        </div>
+    </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -577,8 +641,49 @@
         let toastTimer;
         let levels = [];
         let submissions = [];
+        let playerProfiles = [];
+        let clans = [];
+        let clanMembers = [];
+        let approvedRecords = [];
         let currentUser = null;
         let isAdmin = false;
+        const countryCodes = "AD AE AF AG AL AM AO AR AT AU AZ BA BB BD BE BF BG BH BI BJ BN BO BR BS BT BW BY BZ CA CD CF CG CH CI CL CM CN CO CR CU CV CY CZ DE DJ DK DM DO DZ EC EE EG ER ES ET FI FJ FM FR GA GB GD GE GH GM GN GQ GR GT GW GY HN HR HT HU ID IE IL IN IQ IR IS IT JM JO JP KE KG KH KI KM KN KP KR KW KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MG MH MK ML MM MN MR MT MU MV MW MX MY MZ NA NE NG NI NL NO NP NR NZ OM PA PE PG PH PK PL PT PW PY QA RO RS RU RW SA SB SC SD SE SG SI SK SL SM SN SO SR SS ST SV SY SZ TD TG TH TJ TL TM TN TO TR TT TV TW TZ UA UG US UY UZ VA VC VE VN VU WS YE ZA ZM ZW".split(" ");
+        const countryNames = new Intl.DisplayNames(["en"], { type: "region" });
+        const subdivisionFlags = {
+            ENG: [0x1f3f4, 0xe0067, 0xe0062, 0xe0065, 0xe006e, 0xe0067, 0xe007f],
+            SCT: [0x1f3f4, 0xe0067, 0xe0062, 0xe0073, 0xe0063, 0xe0074, 0xe007f],
+            WLS: [0x1f3f4, 0xe0067, 0xe0062, 0xe0077, 0xe006c, 0xe0073, 0xe007f]
+        };
+        const specialCountries = [
+            { code: "ENG", name: "England" },
+            { code: "SCT", name: "Scotland" },
+            { code: "WLS", name: "Wales" },
+            { code: "NIR", name: "Northern Ireland", flag: "🇬🇧" }
+        ];
+
+        function countryName(code) {
+            const special = specialCountries.find(item => item.code === code);
+            return special?.name || (code ? countryNames.of(code) : "");
+        }
+
+        function countryFlag(code) {
+            if (!code) return "";
+            const special = specialCountries.find(item => item.code === code);
+            if (special?.flag) return special.flag;
+            if (subdivisionFlags[code]) return String.fromCodePoint(...subdivisionFlags[code]);
+            if (!/^[A-Z]{2}$/.test(code)) return "🏳️";
+            return [...code].map(char => String.fromCodePoint(127397 + char.charCodeAt(0))).join("");
+        }
+
+        function countryOptions(selectedCode) {
+            const countries = [
+                ...specialCountries,
+                ...countryCodes.map(code => ({ code, name: countryNames.of(code) || code, flag: countryFlag(code) }))
+            ].sort((a, b) => a.name.localeCompare(b.name));
+            return '<option value="">Choose your country…</option>' + countries
+                .map(country => `<option value="${country.code}"${country.code === selectedCode ? " selected" : ""}>${country.flag} ${escapeHtml(country.name)}</option>`)
+                .join("");
+        }
 
         function escapeHtml(value) {
             return String(value ?? "").replace(/[&<>"']/g, char => ({
@@ -650,21 +755,216 @@
 
         function currentProfile() {
             if (!currentUser) return null;
+            const stored = playerProfiles.find(item => item.id === currentUser.id);
             return {
-                name: currentUser.user_metadata?.display_name || currentUser.email?.split("@")[0] || "Player",
-                email: currentUser.email || ""
+                id: currentUser.id,
+                name: stored?.display_name || currentUser.user_metadata?.display_name || currentUser.email?.split("@")[0] || "Player",
+                email: currentUser.email || "",
+                countryCode: stored?.country_code || "",
+                points: Number(stored?.points || 0)
             };
         }
 
         function updateProfileDisplay() {
             const profile = currentProfile();
-            document.getElementById("profileButton").textContent = profile ? profile.name : "Sign in / create profile";
+            document.getElementById("profileButton").textContent = profile
+                ? `${profile.name}${profile.countryCode ? ` ${countryFlag(profile.countryCode)}` : ""}`
+                : "Sign in / create profile";
             document.querySelectorAll(".current-user").forEach(node => {
                 node.textContent = profile ? profile.name : "Guest";
             });
             document.getElementById("adminNavLink").hidden = !isAdmin;
             document.getElementById("adminPanel").hidden = !isAdmin;
         }
+
+        function clanForPlayer(playerId) {
+            const membership = clanMembers.find(item => item.user_id === playerId);
+            return membership ? clans.find(item => item.id === membership.clan_id) || null : null;
+        }
+
+        function renderLeaderboards() {
+            const playerBoard = document.getElementById("playerLeaderboard");
+            const rankedPlayers = playerProfiles.slice().sort((a, b) =>
+                Number(b.points) - Number(a.points) || a.display_name.localeCompare(b.display_name)
+            );
+            playerBoard.innerHTML = rankedPlayers.length
+                ? rankedPlayers.map((player, index) => {
+                    const clan = clanForPlayer(player.id);
+                    const country = player.country_code
+                        ? `<span class="leaderboard-country">${escapeHtml(countryName(player.country_code) || player.country_code)}</span>`
+                        : "";
+                    return `<button class="player-card" type="button" data-player-id="${escapeHtml(player.id)}">
+                        <span class="leaderboard-position">#${index + 1}</span>
+                        <span class="leaderboard-identity">
+                            <span class="leaderboard-name">${clan ? `<span class="clan-tag">[${escapeHtml(clan.tag)}]</span> ` : ""}${escapeHtml(player.display_name)}${player.country_code ? ` ${countryFlag(player.country_code)}` : ""}</span>
+                            ${country}${clan ? `<span class="leaderboard-clan">${escapeHtml(clan.name)}</span>` : ""}
+                        </span>
+                        <span class="leaderboard-score">${Number(player.points).toLocaleString()} pts</span>
+                    </button>`;
+                }).join("")
+                : '<div class="empty">No player profiles yet.</div>';
+
+            const clanBoard = document.getElementById("clanLeaderboard");
+            const rankedClans = clans.map(clan => {
+                const members = clanMembers.filter(member => member.clan_id === clan.id);
+                const points = members.reduce((sum, member) => {
+                    const player = playerProfiles.find(item => item.id === member.user_id);
+                    return sum + Number(player?.points || 0);
+                }, 0);
+                return { ...clan, members: members.length, points };
+            }).sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
+            const myClan = currentUser ? clanForPlayer(currentUser.id) : null;
+            clanBoard.innerHTML = rankedClans.length
+                ? rankedClans.map((clan, index) => `<article class="clan-card">
+                    <span class="leaderboard-position">#${index + 1}</span>
+                    <span class="leaderboard-identity">
+                        <span class="leaderboard-name"><span class="clan-tag">[${escapeHtml(clan.tag)}]</span> ${escapeHtml(clan.name)}</span>
+                        <span class="leaderboard-clan">${clan.members} ${clan.members === 1 ? "member" : "members"}</span>
+                        ${currentUser && !myClan ? `<button class="button ghost" type="button" data-join-clan="${escapeHtml(clan.id)}">Join clan</button>` : ""}
+                    </span>
+                    <span class="leaderboard-score">${clan.points.toLocaleString()} pts</span>
+                </article>`).join("")
+                : '<div class="empty">No clans yet. Reach 10,000 points to create the first one.</div>';
+        }
+
+        function renderPlayerProfile(playerId) {
+            const player = playerProfiles.find(item => item.id === playerId);
+            if (!player) {
+                showToast("Could not find that player profile.");
+                return;
+            }
+            const ownProfile = currentUser?.id === player.id;
+            const clan = clanForPlayer(player.id);
+            const records = approvedRecords
+                .filter(record => record.user_id === player.id)
+                .slice()
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            document.getElementById("playerProfileTitle").textContent = `${clan ? `[${clan.tag}] ` : ""}${player.display_name}${player.country_code ? ` ${countryFlag(player.country_code)}` : ""}`;
+            const completionMarkup = records.length
+                ? records.map(record => {
+                    const level = levels.find(item => item.id === record.level_id);
+                    return `<article class="profile-record">
+                        <strong>${escapeHtml(level?.name || "Removed challenge")} · ${escapeHtml(record.percent)}%</strong>
+                        <span class="profile-record-meta">Submitted as ${escapeHtml(record.player_name)} · ${escapeHtml(new Date(record.created_at).toLocaleDateString())}${level ? ` · Rank #${escapeHtml(level.rank)}` : ""}</span>
+                        ${safeLink(record.proof_url, "View completion proof ↗")}
+                    </article>`;
+                }).join("")
+                : '<div class="empty">No approved completions yet.</div>';
+            const clanSection = clan
+                ? `<div class="clan-controls">
+                    <div class="clan-tag">[${escapeHtml(clan.tag)}] ${escapeHtml(clan.name)}</div>
+                    ${ownProfile ? '<button class="button ghost" type="button" data-leave-clan>Leave clan</button>' : currentUser && !clanForPlayer(currentUser.id) ? `<button class="button ghost" type="button" data-join-clan="${escapeHtml(clan.id)}">Join clan</button>` : ""}
+                </div>`
+                : "";
+            const countryControl = ownProfile
+                ? `<div class="field"><label for="profileCountry">Country shown on your profile</label><select id="profileCountry">${countryOptions(player.country_code || "")}</select></div>`
+                : player.country_code
+                    ? `<div class="profile-summary">${escapeHtml(countryName(player.country_code) || player.country_code)}</div>`
+                    : "";
+            let createClanMarkup = "";
+            if (ownProfile && !clan) {
+                createClanMarkup = Number(player.points) >= 10000
+                    ? `<form id="createClanForm" class="clan-create-grid">
+                        <div class="field"><label for="clanTag">Clan tag</label><input id="clanTag" name="tag" required maxlength="5" pattern="[A-Za-z0-9]{2,5}" placeholder="TAG"></div>
+                        <div class="field"><label for="clanName">Clan name</label><input id="clanName" name="name" required maxlength="40" placeholder="Your clan name"></div>
+                        <button class="button primary" type="submit">Create clan</button>
+                    </form>`
+                    : '<p class="fine-print">Reach 10,000 points to create a clan.</p>';
+            }
+            document.getElementById("playerProfileContents").innerHTML = `
+                <div class="profile-detail-head">
+                    <h3 class="profile-detail-name">${clan ? `<span class="clan-tag">[${escapeHtml(clan.tag)}]</span> ` : ""}${escapeHtml(player.display_name)}${player.country_code ? ` ${countryFlag(player.country_code)}` : ""}</h3>
+                    <strong>${Number(player.points).toLocaleString()} points</strong>
+                </div>
+                ${countryControl}
+                ${clanSection}
+                ${createClanMarkup}
+                <h3>Approved completions (${records.length})</h3>
+                <div class="profile-records">${completionMarkup}</div>`;
+            const playerDialog = document.getElementById("playerProfileDialog");
+            if (!playerDialog.open) playerDialog.showModal();
+        }
+
+        async function joinClan(clanId, profileIdToRefresh) {
+            if (!currentUser) {
+                showToast("Sign in before joining a clan.");
+                return;
+            }
+            const { error } = await supabaseClient.rpc("join_clan", { p_clan_id: clanId });
+            if (error) {
+                console.error("Could not join clan.", error);
+                showToast(error.message || "Could not join that clan.");
+                return;
+            }
+            showToast("You joined the clan.");
+            await loadBoard();
+            if (profileIdToRefresh) renderPlayerProfile(profileIdToRefresh);
+        }
+
+        document.getElementById("playerLeaderboard").addEventListener("click", event => {
+            const card = event.target.closest("[data-player-id]");
+            if (card) renderPlayerProfile(card.dataset.playerId);
+        });
+        document.getElementById("clanLeaderboard").addEventListener("click", event => {
+            const button = event.target.closest("[data-join-clan]");
+            if (button) void joinClan(button.dataset.joinClan, currentUser?.id);
+        });
+        document.getElementById("playerProfileContents").addEventListener("change", async event => {
+            if (event.target.id !== "profileCountry" || !currentUser) return;
+            const { error } = await supabaseClient.rpc("set_my_country", { p_country_code: event.target.value });
+            if (error) {
+                console.error("Could not update profile country.", error);
+                showToast(error.message || "Could not update your country.");
+                return;
+            }
+            showToast("Country updated.");
+            await loadBoard();
+            renderPlayerProfile(currentUser.id);
+        });
+        document.getElementById("playerProfileContents").addEventListener("click", event => {
+            const joinButton = event.target.closest("[data-join-clan]");
+            if (joinButton) {
+                void joinClan(joinButton.dataset.joinClan, currentUser?.id);
+                return;
+            }
+            if (!event.target.closest("[data-leave-clan]") || !currentUser) return;
+            void (async () => {
+                const { error } = await supabaseClient.rpc("leave_clan");
+                if (error) {
+                    console.error("Could not leave clan.", error);
+                    showToast(error.message || "Could not leave clan.");
+                    return;
+                }
+                showToast("You left the clan.");
+                await loadBoard();
+                renderPlayerProfile(currentUser.id);
+            })();
+        });
+        document.getElementById("playerProfileContents").addEventListener("submit", event => {
+            if (event.target.id !== "createClanForm" || !currentUser) return;
+            event.preventDefault();
+            void (async () => {
+                const form = new FormData(event.target);
+                const tag = String(form.get("tag") || "").trim().toUpperCase();
+                const name = String(form.get("name") || "").trim();
+                if (!/^[A-Z0-9]{2,5}$/.test(tag) || !name) {
+                    showToast("Enter a 2-5 character clan tag and a clan name.");
+                    return;
+                }
+                const { error } = await supabaseClient.rpc("create_clan", { p_tag: tag, p_name: name });
+                if (error) {
+                    console.error("Could not create clan.", error);
+                    showToast(error.message || "Could not create clan.");
+                    return;
+                }
+                showToast("Clan created!");
+                await loadBoard();
+                renderPlayerProfile(currentUser.id);
+            })();
+        });
+        document.getElementById("closePlayerProfile").addEventListener("click", () => {
+            document.getElementById("playerProfileDialog").close();
+        });
 
         function renderLevels() {
             const search = document.getElementById("searchLevels").value.trim().toLowerCase();
@@ -748,26 +1048,28 @@
         async function loadBoard() {
             levelList.innerHTML = '<div class="empty">Loading challenges…</div>';
             if (currentUser) {
-                const profileResult = await supabaseClient.from("profiles").select("is_admin").eq("id", currentUser.id).single();
+                const profileResult = await supabaseClient.rpc("is_admin");
                 if (profileResult.error) {
                     console.error("Could not check the current user's admin role.", profileResult.error);
                     isAdmin = false;
                 } else {
-                    isAdmin = profileResult.data.is_admin === true;
+                    isAdmin = profileResult.data === true;
                 }
             } else {
                 isAdmin = false;
             }
-            updateProfileDisplay();
-            const [levelsResult, recordsResult, submissionsResult] = await Promise.all([
+            const [levelsResult, recordsResult, submissionsResult, profilesResult, clansResult, clanMembersResult] = await Promise.all([
                 supabaseClient.from("challenge_levels").select("*").order("rank"),
                 supabaseClient.from("records").select("*").eq("approved", true),
                 currentUser
                     ? supabaseClient.from("submissions").select("*").eq(isAdmin ? "status" : "user_id", isAdmin ? "pending" : currentUser.id).order("created_at", { ascending: false })
-                    : Promise.resolve({ data: [], error: null })
+                    : Promise.resolve({ data: [], error: null }),
+                supabaseClient.from("profiles").select("id, display_name, country_code, points"),
+                supabaseClient.from("clans").select("id, tag, name, owner_id"),
+                supabaseClient.from("clan_members").select("user_id, clan_id")
             ]);
 
-            const failed = [levelsResult, recordsResult, submissionsResult].find(result => result.error);
+            const failed = [levelsResult, recordsResult, submissionsResult, profilesResult, clansResult, clanMembersResult].find(result => result.error);
             if (failed) {
                 console.error("Could not load the challenge board from Supabase.", failed.error);
                 levelList.innerHTML = '<div class="empty">shucks! something went realllly wrong... servers might be down!! :3</div>';
@@ -775,6 +1077,10 @@
                 return;
             }
 
+            approvedRecords = recordsResult.data;
+            playerProfiles = profilesResult.data;
+            clans = clansResult.data;
+            clanMembers = clanMembersResult.data;
             levels = levelsResult.data.map(level => ({
                 id: level.id,
                 name: level.name,
@@ -791,9 +1097,11 @@
                     .map(record => ({ player: record.player_name, percent: record.percent, proof: record.proof_url }))
             }));
             submissions = submissionsResult.data;
+            updateProfileDisplay();
             refreshFilters();
             renderLevels();
             renderSubmissions();
+            renderLeaderboards();
             if (isAdmin) {
                 renderAdminQueue();
                 renderAdminLevels();
@@ -1054,7 +1362,7 @@
                 document.getElementById("profileTitle").textContent = "Your profile";
                 profileContents.innerHTML = `<div class="profile-summary">Signed in as <strong>${escapeHtml(profile.name)}</strong> (${escapeHtml(profile.email)}).</div>
                     <p class="notice">Your profile is secured by Supabase Auth. Never share your password with anyone.</p>
-                    <div class="form-actions"><button class="button danger" id="signOut" type="button">Sign out</button><button class="button" id="profileDone" type="button">Done</button></div>`;
+                    <div class="form-actions"><button class="button danger" id="signOut" type="button">Sign out</button><button class="button ghost" id="openPublicProfile" type="button">Public profile</button><button class="button" id="profileDone" type="button">Done</button></div>`;
                 document.getElementById("signOut").addEventListener("click", async () => {
                     const { error } = await supabaseClient.auth.signOut();
                     if (error) {
@@ -1064,6 +1372,10 @@
                     }
                     dialog.close();
                     showToast("You have signed out.");
+                });
+                document.getElementById("openPublicProfile").addEventListener("click", () => {
+                    dialog.close();
+                    renderPlayerProfile(currentUser.id);
                 });
                 document.getElementById("profileDone").addEventListener("click", () => dialog.close());
                 return;
