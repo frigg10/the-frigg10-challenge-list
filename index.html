@@ -421,411 +421,6 @@
             .player-card, .clan-card { padding: 12px; gap: 10px; }
             .clan-create-grid { grid-template-columns: 1fr; }
         }
-
-        :root {
-            color-scheme: light;
-            --page: #f4f7f9;
-            --surface: #fff;
-            --surface-raised: #f8fafb;
-            --border: rgba(32, 54, 71, .17);
-            --text: #202b35;
-            --muted: #687784;
-            --accent: #137fb0;
-            --accent-bright: #087daf;
-            --green: #16865f;
-            --amber: #986516;
-            --danger: #bd4853;
-            --content-width: 900px;
-        }
-
-        body {
-            background: #f3f7f9;
-            color: var(--text);
-        }
-        body::before, body::after {
-            position: fixed;
-            top: 60px;
-            bottom: 0;
-            z-index: 1;
-            width: max(0px, calc((100vw - 940px) / 2));
-            content: "";
-            pointer-events: none;
-            background-color: #147eae;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%231684b5'/%3E%3Cpath fill='%230b628f' d='M0 0h60v56H0zM108 0h72v72h-72zM0 56h52v72H0zM70 108h46v72H70z'/%3E%3Cpath fill='%233bb6e9' d='M60 0h48v44H60zM52 44h56v64H52zM132 72h48v52h-48zM0 128h70v52H0z'/%3E%3Cpath fill='%23258fbd' d='M108 72h24v52h-24zM116 124h64v56h-64zM60 128h10v52H60z'/%3E%3C/svg%3E");
-            background-size: 180px 180px;
-            background-repeat: repeat;
-        }
-        body::before { left: 0; }
-        body::after { right: 0; transform: scaleX(-1); }
-        .background-video { opacity: .04; mix-blend-mode: soft-light; filter: saturate(.45) brightness(.7); }
-        .site-header {
-            z-index: 3;
-            border-bottom: 1px solid #dce3e8;
-            background: rgba(255,255,255,.97);
-            backdrop-filter: none;
-            -webkit-backdrop-filter: none;
-        }
-        .shell { width: min(var(--content-width), calc(100% - 32px)); }
-        .nav {
-            min-height: 60px;
-            gap: 16px;
-        }
-        .brand { gap: 9px; }
-        .brand-mark { width: 30px; height: 30px; border-radius: 5px; }
-        .brand-name { color: #3e4851; font-size: .88rem; letter-spacing: .01em; }
-        .profile-button {
-            padding: 7px 12px;
-            border-color: #d6dfe5;
-            color: #384954;
-            background: #fff;
-            box-shadow: none;
-            backdrop-filter: none;
-            -webkit-backdrop-filter: none;
-        }
-        .profile-button:hover { background: #f0f7fa; border-color: #99bdcf; }
-        .subnav {
-            min-height: 36px;
-            display: flex;
-            align-items: stretch;
-            justify-content: center;
-            border: 1px dashed #d4dce1;
-            border-bottom: 0;
-            background: #fbfcfd;
-        }
-        .nav-links { justify-content: space-around; width: 100%; gap: 4px; }
-        .nav-link, .profile-button {
-            border-radius: 3px;
-            transition: color .2s ease, background .2s ease, border-color .2s ease;
-        }
-        .nav-link {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 6px 12px;
-            color: #47545e;
-            font-size: .82rem;
-            font-weight: 700;
-        }
-        .nav-link:hover, .nav-link.active {
-            border-color: transparent;
-            color: #086f9d;
-            background: #edf6fa;
-            box-shadow: none;
-        }
-        .nav-link:hover, .profile-button:hover { transform: none; }
-        main.shell {
-            position: relative;
-            z-index: 2;
-            min-height: 70vh;
-            padding: 22px 8px 64px;
-            background: #fff;
-            box-shadow: 0 8px 30px rgba(28,55,72,.08);
-        }
-        .hero { align-items: center; gap: 16px; margin-bottom: 18px; }
-        .hero .eyebrow { color: #1681b0; font-size: .68rem; }
-        h1 { margin: 4px 0; color: #27343e; font-size: clamp(1.65rem, 4vw, 2.25rem); letter-spacing: -.035em; }
-        .hero p { color: #65747f; font-size: .94rem; }
-        .hero-actions { gap: 7px; }
-        .button {
-            min-height: 36px;
-            padding: 7px 12px;
-            border-color: #ccd9e0;
-            border-radius: 4px;
-            color: #35434d;
-            background: #fff;
-            box-shadow: none;
-            backdrop-filter: none;
-            -webkit-backdrop-filter: none;
-        }
-        .button:hover { transform: none; border-color: #8ab6cb; background: #f2f8fa; }
-        .button.primary, .button.primary:hover {
-            border-color: #0c78a6;
-            color: #fff;
-            background: #117eae;
-        }
-        .button.ghost { background: #f6f9fa; }
-        .stats { gap: 8px; margin: 14px 0 20px; }
-        .stat {
-            padding: 10px 13px;
-            border: 1px dashed #d6dfe4;
-            border-radius: 3px;
-            background: #fff;
-            box-shadow: none;
-            backdrop-filter: none;
-            -webkit-backdrop-filter: none;
-        }
-        .stat-label { color: #697782; font-size: .73rem; }
-        .stat-value { color: #273944; font-size: 1.15rem; }
-        .content-layout { display: grid; grid-template-columns: minmax(0, 2.35fr) minmax(205px, 1fr); align-items: start; gap: 16px; }
-        .challenge-column, .sidebar { min-width: 0; }
-        .section-heading { margin: 0 0 12px; }
-        h2 { color: #35434d; font-size: 1.15rem; }
-        .section-note { color: #74828c; font-size: .8rem; }
-        .toolbar { gap: 7px; margin-bottom: 10px; }
-        input, select, textarea {
-            min-height: 36px;
-            padding: 7px 9px;
-            border-color: #d7dfe4;
-            border-radius: 3px;
-            color: #293741;
-            background: #fff;
-            box-shadow: none;
-            backdrop-filter: none;
-            -webkit-backdrop-filter: none;
-        }
-        input::placeholder, textarea::placeholder { color: #8a969e; }
-        .toolbar select { min-width: 115px; }
-        .level-list { gap: 12px; }
-        .level-card, .level-card:hover {
-            display: grid;
-            padding: 14px;
-            border: 1px dashed #d2dade;
-            border-radius: 3px;
-            background: #fff;
-            box-shadow: 0 4px 13px rgba(22,48,65,.055);
-            backdrop-filter: none;
-            -webkit-backdrop-filter: none;
-            transform: none;
-        }
-        .level-card.has-image { grid-template-columns: 174px minmax(0, 1fr); gap: 13px; }
-        .level-image-preview {
-            align-self: start;
-            margin: 2px 0 0;
-            border: 0;
-            border-radius: 0;
-            background: #edf1f3;
-        }
-        .level-image-preview figcaption {
-            padding: 2px 5px;
-            color: #73818b;
-            background: #f4f6f7;
-            font-size: .56rem;
-            letter-spacing: .04em;
-        }
-        .level-image { height: 94px; max-height: 94px; object-fit: cover; }
-        .level-content { min-width: 0; }
-        .level-name-row { align-items: baseline; flex-wrap: nowrap; gap: 8px; }
-        .level-name { color: #27343e; font-size: 1.05rem; }
-        .rank {
-            flex: 0 0 auto;
-            padding: 0;
-            border: 0;
-            color: #167ea9;
-            background: transparent;
-            font-size: .92rem;
-        }
-        .difficulty {
-            display: inline-block;
-            margin-top: 2px;
-            padding: 0;
-            border: 0;
-            color: #667580;
-            background: transparent;
-            font-size: .72rem;
-            font-weight: 600;
-        }
-        .level-description { margin: 5px 0 8px; color: #62717c; font-size: .82rem; }
-        .level-meta { gap: 4px 12px; color: #6b7983; font-size: .73rem; }
-        .level-meta strong { color: #364650; }
-        .level-links { gap: 8px; margin-top: 7px; }
-        .text-link { color: #087eaf; font-size: .76rem; }
-        .records { margin-top: 8px; padding-top: 6px; border-top: 1px solid #edf0f2; }
-        .records-heading { margin-bottom: 3px; color: #79868e; font-size: .61rem; }
-        .record-row { padding: 3px 0; color: #46545d; font-size: .75rem; }
-        .record-percent { color: #18835e; }
-        .empty { padding: 18px; border-color: #d7dfe4; border-radius: 3px; color: #687782; background: #fff; }
-        .sidebar { display: grid; gap: 13px; }
-        .sidebar-card {
-            padding: 14px 13px;
-            border: 1px dashed #d2dade;
-            background: #fff;
-            box-shadow: 0 4px 13px rgba(22,48,65,.045);
-            text-align: center;
-        }
-        .sidebar-card h2 { margin: 0 0 8px; padding-bottom: 7px; border-bottom: 1px solid #e2e7ea; font-size: 1.12rem; }
-        .sidebar-card p { margin: 0 0 10px; color: #6c7982; font-size: .73rem; line-height: 1.4; }
-        .sidebar-link { color: #147da9; font-size: .76rem; text-decoration: none; }
-        .sidebar-link:hover { text-decoration: underline; }
-        .sidebar-callout .button { width: 100%; }
-        #submissions, #pending, #adminPanel { margin-top: 28px; }
-        .panel {
-            border-color: #d6dfe4;
-            border-radius: 3px;
-            background: #fff;
-            box-shadow: 0 4px 13px rgba(22,48,65,.055);
-            backdrop-filter: none;
-            -webkit-backdrop-filter: none;
-        }
-        .panel h3, .admin-card-title, .pending-title { color: #2e3b45; }
-        .panel > p, .fine-print, .pending-meta { color: #6c7a84; }
-        .pending-item, .admin-card {
-            border-color: #d6dfe4;
-            border-radius: 3px;
-            color: #33434e;
-            background: #fff;
-            box-shadow: 0 4px 13px rgba(22,48,65,.045);
-            backdrop-filter: none;
-            -webkit-backdrop-filter: none;
-        }
-        .leaderboard-list { gap: 9px; }
-        .player-card, .clan-card {
-            border: 1px dashed #d2dade;
-            border-radius: 3px;
-            color: #2e3b45;
-            background: #fff;
-            box-shadow: 0 4px 13px rgba(22,48,65,.045);
-        }
-        .player-card:hover { border-color: #8ab6cb; background: #f7fbfc; }
-        .leaderboard-position, .clan-tag { color: #117eae; }
-        .leaderboard-clan, .leaderboard-country { color: #6c7a84; }
-        .leaderboard-score { color: #344550; }
-        .footer { z-index: 2; color: #697782; background: #fff; }
-        dialog {
-            border-color: #d2dade;
-            border-radius: 5px;
-            color: #283640;
-            background: #fff;
-            box-shadow: 0 18px 60px rgba(24,47,62,.28);
-            backdrop-filter: none;
-            -webkit-backdrop-filter: none;
-        }
-        dialog::backdrop { background: rgba(22,39,51,.42); backdrop-filter: blur(2px); }
-        .icon-button { color: #51616b; }
-        .toast {
-            border-color: #cbd8df;
-            border-radius: 4px;
-            color: #2d3b45;
-            background: #fff;
-            box-shadow: 0 8px 28px rgba(24,47,62,.17);
-            backdrop-filter: none;
-            -webkit-backdrop-filter: none;
-        }
-        .stat::before, .level-card::before, .panel::before, .pending-item::before, .admin-card::before { display: none; }
-        .site-header, main, .footer { position: relative; }
-
-        @media (max-width: 720px) {
-            body::before, body::after { width: max(0px, calc((100vw - 100% + 0px) / 2)); }
-            .shell { width: min(var(--content-width), calc(100% - 24px)); }
-            .nav { min-height: 56px; flex-wrap: nowrap; padding: 6px 0; }
-            .subnav { min-height: 36px; overflow-x: auto; justify-content: flex-start; }
-            .nav-links { order: initial; width: max-content; min-width: 100%; overflow-x: auto; justify-content: flex-start; }
-            .nav-link { white-space: nowrap; }
-            main.shell { padding: 18px 12px 48px; }
-            .content-layout { grid-template-columns: 1fr; }
-            .sidebar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-            .hero { align-items: flex-start; flex-direction: column; }
-            .level-card.has-image { grid-template-columns: 150px minmax(0, 1fr); gap: 11px; }
-            .level-image { height: 86px; max-height: 86px; }
-        }
-        @media (max-width: 460px) {
-            .shell { width: calc(100% - 16px); }
-            main.shell { padding: 14px 9px 36px; }
-            .nav { gap: 8px; }
-            .brand-name { font-size: .77rem; }
-            .profile-button { padding: 6px 8px; font-size: .78rem; white-space: nowrap; }
-            .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-            .stat { padding: 8px 7px; }
-            .stat-label { font-size: .63rem; }
-            .stat-value { font-size: 1rem; }
-            .toolbar { align-items: stretch; flex-direction: column; }
-            .toolbar select { width: 100%; }
-            .level-card.has-image { grid-template-columns: 1fr; }
-            .level-image-preview { max-width: 100%; }
-            .level-image { height: auto; max-height: 180px; }
-            .sidebar { grid-template-columns: 1fr; }
-        }
-
-        :root {
-            color-scheme: dark;
-            --page: #080a10;
-            --surface: #11151d;
-            --surface-raised: #171d27;
-            --border: rgba(164, 183, 204, .19);
-            --text: #edf2f8;
-            --muted: #a4b0bf;
-            --accent: #4f9cc5;
-            --accent-bright: #79c7ef;
-            --green: #73d4a7;
-            --amber: #eac06f;
-            --danger: #ff929d;
-        }
-        body {
-            background:
-                radial-gradient(ellipse at 82% -12%, rgba(65, 91, 135, .16), transparent 36rem),
-                #07090e;
-            color: #edf2f8;
-        }
-        body::before, body::after {
-            background-color: #071b33;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23091d37'/%3E%3Cpath fill='%23051020' d='M0 0h60v56H0zM108 0h72v72h-72zM0 56h52v72H0zM70 108h46v72H70z'/%3E%3Cpath fill='%23102c4d' d='M60 0h48v44H60zM52 44h56v64H52zM132 72h48v52h-48zM0 128h70v52H0z'/%3E%3Cpath fill='%230d2542' d='M108 72h24v52h-24zM116 124h64v56h-64zM60 128h10v52H60z'/%3E%3C/svg%3E");
-        }
-        .background-video { opacity: .04; mix-blend-mode: soft-light; filter: saturate(.45) brightness(.7); }
-        .site-header { border-color: #202a36; background: rgba(9,12,18,.97); }
-        .brand-name { color: #e5edf5; }
-        .profile-button { border-color: #303d4a; color: #e4edf5; background: #141a23; }
-        .profile-button:hover { border-color: #4b7891; background: #1b2732; }
-        .subnav { border-color: #25313d; background: #0e131a; }
-        .nav-link { color: #b3bfcb; }
-        .nav-link:hover, .nav-link.active { color: #8bd4f7; background: #172632; }
-        main.shell { background: rgba(9,12,18,.9); box-shadow: 0 8px 32px rgba(0,0,0,.42); }
-        .hero .eyebrow { color: #79c7ef; }
-        h1, .level-name, .stat-value { color: #edf2f8; }
-        .hero p { color: #a7b2bf; }
-        .button { border-color: #354351; color: #e1e9f0; background: #151b24; }
-        .button:hover { border-color: #527d95; background: #1b2933; }
-        .button.primary, .button.primary:hover { border-color: #167aa5; color: #f4fbff; background: #12668c; }
-        .button.ghost { background: #111720; }
-        .stat { border-color: #28323d; background: #10151d; }
-        .stat-label, .section-note { color: #a1aebb; }
-        h2 { color: #e1eaf2; }
-        input, select, textarea {
-            border-color: #34404d;
-            color: #e8eff6;
-            background: #0e131a;
-        }
-        input::placeholder, textarea::placeholder { color: #82909e; }
-        input:hover, select:hover, textarea:hover { border-color: #527d95; background-color: #141e27; }
-        .level-card, .level-card:hover {
-            border-color: #293541;
-            background: #11161e;
-            box-shadow: 0 5px 16px rgba(0,0,0,.24);
-        }
-        .level-image-preview { background: #080b10; }
-        .level-image-preview figcaption { color: #9aa9b7; background: #151b23; }
-        .rank { color: #7dcaf0; }
-        .difficulty { color: #b6c1cb; }
-        .level-description { color: #a6b2bf; }
-        .level-meta { color: #a0adba; }
-        .level-meta strong { color: #e0e8ef; }
-        .text-link, .sidebar-link { color: #7bc8ec; }
-        .records { border-color: #28323c; }
-        .records-heading { color: #91a0ad; }
-        .record-row { color: #d4dde6; }
-        .record-percent { color: #73d4a7; }
-        .empty { border-color: #33404d; color: #aab6c2; background: #10151d; }
-        .sidebar-card { border-color: #2a3540; background: #10151c; box-shadow: 0 5px 16px rgba(0,0,0,.2); }
-        .sidebar-card h2 { border-color: #2d3945; color: #e4ecf3; }
-        .sidebar-card p { color: #a3afbb; }
-        .panel { border-color: #2a3540; background: #11161e; box-shadow: 0 5px 16px rgba(0,0,0,.22); }
-        .panel h3, .admin-card-title, .pending-title { color: #e7eef5; }
-        .panel > p, .fine-print, .pending-meta { color: #a4b0bd; }
-        .pending-item, .admin-card { border-color: #2b3743; color: #e1e9f0; background: #11161e; box-shadow: 0 5px 16px rgba(0,0,0,.2); }
-        .player-card, .clan-card { border-color: #2a3540; color: #e4ecf3; background: #11161e; box-shadow: 0 5px 16px rgba(0,0,0,.2); }
-        .player-card:hover { border-color: #4b7891; background: #17212b; }
-        .leaderboard-position, .clan-tag { color: #7bc8ec; }
-        .leaderboard-clan, .leaderboard-country { color: #a4b0bd; }
-        .leaderboard-score { color: #e2eaf1; }
-        .footer { color: #9eabb8; background: #090c12; border-color: #222d38; }
-        dialog { border-color: #34404c; color: #e8eff6; background: #111720; box-shadow: 0 18px 60px rgba(0,0,0,.6); }
-        dialog::backdrop { background: rgba(0,0,0,.68); }
-        .icon-button { border-color: #394653; color: #becad5; }
-        .notice { border-color: rgba(234,192,111,.28); color: #e7cb91; background: rgba(234,192,111,.08); }
-        .toast { border-color: #394653; color: #e8eff6; background: #171e28; box-shadow: 0 8px 28px rgba(0,0,0,.5); }
-        .image-preview { border-color: #303c48; color: #a8b4c0; background: #0d1219; }
-        .image-preview-status { color: #a8b4c0; }
-        .profile-record { border-color: #2d3945; background: #151b24; }
-        .profile-record-meta { color: #a3afbb; }
-        .stat::before, .level-card::before, .panel::before, .pending-item::before, .admin-card::before { display: none; }
     </style>
 </head>
 <body>
@@ -838,22 +433,18 @@
                 <img class="brand-mark" src="FRIGGList.png" alt="">
                 <span class="brand-name">Frigg10's challenge list :3</span>
             </a>
-            <button class="profile-button" id="profileButton" type="button">Create profile</button>
-        </nav>
-        <nav class="subnav shell" aria-label="Site sections">
             <div class="nav-links">
-                <a class="nav-link" href="#home">Challenges</a>
-                <a class="nav-link" href="#leaderboard">Leaderboard</a>
+                <a class="nav-link active" href="#home">Leaderboard</a>
                 <a class="nav-link" href="#submit-level">Suggest a level</a>
                 <a class="nav-link" href="#submit-record">Submit a record</a>
                 <a class="nav-link" href="#pending">Submissions</a>
                 <a class="nav-link" id="adminNavLink" href="#adminPanel" hidden>Admin</a>
             </div>
+            <button class="profile-button" id="profileButton" type="button">Create profile</button>
         </nav>
     </header>
 
     <main class="shell" id="home">
-        <div id="homePage">
         <section class="hero" aria-labelledby="page-title">
             <div>
                 <div class="eyebrow">frigg10's cool challenge list</div>
@@ -872,9 +463,27 @@
             <div class="stat"><div class="stat-label">Awaiting review</div><div class="stat-value" id="pendingCount">0</div></div>
         </section>
 
-        <div class="content-layout">
-        <div class="challenge-column">
-        <section id="challengeBoard" aria-labelledby="levels-heading">
+        <section aria-labelledby="players-heading">
+            <div class="section-heading">
+                <div>
+                    <h2 id="players-heading">Player leaderboard</h2>
+                    <p class="section-note">Approved 100% completions earn 1,000 points for top 10, 500 for top 50, and 100 for top 100 (once per level). Click a player to see all their approved completions.</p>
+                </div>
+            </div>
+            <div class="leaderboard-list" id="playerLeaderboard" aria-live="polite"></div>
+        </section>
+
+        <section aria-labelledby="clans-heading">
+            <div class="section-heading">
+                <div>
+                    <h2 id="clans-heading">Clan leaderboard</h2>
+                    <p class="section-note">Clan scores combine the points of all current members.</p>
+                </div>
+            </div>
+            <div class="leaderboard-list" id="clanLeaderboard" aria-live="polite"></div>
+        </section>
+
+        <section aria-labelledby="levels-heading">
             <div class="section-heading">
                 <div>
                     <h2 id="levels-heading">Challenge list</h2>
@@ -894,30 +503,6 @@
             </div>
             <div class="level-list" id="levelList" aria-live="polite"></div>
         </section>
-        </div>
-        <aside class="sidebar" aria-label="Challenge list information">
-            <section class="sidebar-card">
-                <h2>List editors</h2>
-                <p>Questions about a challenge or something on the list? Contact a list editor.</p>
-                <a class="sidebar-link" href="#submit-level">Suggest a correction ↗</a>
-            </section>
-            <section class="sidebar-card">
-                <h2>List helpers</h2>
-                <p>Need help with a record submission? Check the guidelines before contacting a reviewer.</p>
-                <a class="sidebar-link" href="#submit-record">Submit a record ↗</a>
-            </section>
-            <section class="sidebar-card">
-                <h2>Guidelines</h2>
-                <p>Submissions need a valid proof link. Approved full completions on the top 100 earn points.</p>
-                <a class="sidebar-link" href="#submit-level">Suggest a challenge ↗</a>
-            </section>
-            <section class="sidebar-card sidebar-callout">
-                <h2>Community standings</h2>
-                <p>See player points, clans, and verified completions.</p>
-                <a class="button primary" href="#leaderboard">Open leaderboard</a>
-            </section>
-        </aside>
-        </div>
 
         <section id="submissions" aria-labelledby="submissions-heading">
             <div class="section-heading">
@@ -1012,29 +597,6 @@
             </div>
             <div class="admin-list" id="adminQueue"></div>
             <p class="fine-print">Admin permissions are checked by Supabase policies as well as the page UI. Never promote an account from the browser.</p>
-        </section>
-        </div>
-        <section id="leaderboardPage" aria-label="Player and clan leaderboard" hidden>
-            <div class="section-heading">
-                <div>
-                    <div class="eyebrow">Community standings</div>
-                    <h1>Leaderboard</h1>
-                    <p class="section-note">Approved 100% completions earn 1,000 points for top 10, 500 for top 50, and 100 for top 100 (once per level). Click a player to see all their approved completions.</p>
-                </div>
-            </div>
-            <div class="section-heading">
-                <div>
-                    <h2 id="players-heading">Players</h2>
-                </div>
-            </div>
-            <div class="leaderboard-list" id="playerLeaderboard" aria-live="polite"></div>
-            <div class="section-heading">
-                <div>
-                    <h2 id="clans-heading">Clans</h2>
-                    <p class="section-note">Clan scores combine the points of all current members.</p>
-                </div>
-            </div>
-            <div class="leaderboard-list" id="clanLeaderboard" aria-live="polite"></div>
         </section>
     </main>
 
@@ -1429,30 +991,24 @@
                         level.levelId ? `<span class="section-note">Level ID: ${escapeHtml(level.levelId)}</span>` : ""
                     ].filter(Boolean).join("");
                     const imageSrc = imageSource(level.imagePath);
-                    return `<article class="level-card${imageSrc ? " has-image" : ""}">
+                    return `<article class="level-card">
                         ${imageSrc ? `<figure class="level-image-preview"><figcaption>Image Preview</figcaption><img class="level-image" src="${escapeHtml(imageSrc)}" alt="${escapeHtml(level.name)} preview" loading="lazy"></figure>` : ""}
-                        <div class="level-content">
-                            <div class="level-top">
-                                <div>
-                                    <div class="level-name-row"><span class="rank">#${escapeHtml(level.rank)}</span><h3 class="level-name">${escapeHtml(level.name)}</h3></div>
-                                    <div class="difficulty">${escapeHtml(level.difficulty || "Unrated")}</div>
-                                    ${level.description ? `<p class="level-description">${escapeHtml(level.description)}</p>` : ""}
-                                </div>
+                        <div class="level-top">
+                            <div>
+                                <div class="level-name-row"><h3 class="level-name">${escapeHtml(level.name)}</h3><span class="rank">#${escapeHtml(level.rank)}</span><span class="difficulty">${escapeHtml(level.difficulty || "Unrated")}</span></div>
+                                ${level.description ? `<p class="level-description">${escapeHtml(level.description)}</p>` : ""}
                             </div>
-                            <div class="level-meta">
-                                <span>Creator: <strong>${escapeHtml(level.creator || "Unknown")}</strong></span>
-                                <span>Verifier: <strong>${escapeHtml(level.verifier || "Pending")}</strong></span>
-                            </div>
-                            ${links ? `<div class="level-links">${links}</div>` : ""}
-                            <div class="records"><h4 class="records-heading">Victors &amp; records · ${records.length}</h4>${recordMarkup}</div>
                         </div>
+                        <div class="level-meta">
+                            <span>Creator: <strong>${escapeHtml(level.creator || "Unknown")}</strong></span>
+                            <span>Verifier: <strong>${escapeHtml(level.verifier || "Pending")}</strong></span>
+                        </div>
+                        ${links ? `<div class="level-links">${links}</div>` : ""}
+                        <div class="records"><h4 class="records-heading">Victors &amp; records · ${records.length}</h4>${recordMarkup}</div>
                     </article>`;
                 }).join("");
                 levelList.querySelectorAll(".level-image").forEach(image => {
-                    image.addEventListener("error", () => {
-                        image.closest(".level-image-preview").hidden = true;
-                        image.closest(".level-card").classList.remove("has-image");
-                    }, { once: true });
+                    image.addEventListener("error", () => { image.closest(".level-image-preview").hidden = true; }, { once: true });
                 });
             }
             document.getElementById("levelCount").textContent = levels.length;
@@ -1888,24 +1444,6 @@
         document.getElementById("searchLevels").addEventListener("input", renderLevels);
         document.getElementById("difficultyFilter").addEventListener("change", renderLevels);
         document.getElementById("sortLevels").addEventListener("change", renderLevels);
-
-        function renderPageRoute() {
-            const leaderboardPage = location.hash === "#leaderboard";
-            document.getElementById("homePage").hidden = leaderboardPage;
-            document.getElementById("leaderboardPage").hidden = !leaderboardPage;
-            document.querySelectorAll(".nav-link[href='#home'], .nav-link[href='#leaderboard']").forEach(link => {
-                link.classList.toggle("active", link.getAttribute("href") === (leaderboardPage ? "#leaderboard" : "#home"));
-            });
-
-            if (!leaderboardPage && location.hash && location.hash !== "#home") {
-                requestAnimationFrame(() => document.getElementById(location.hash.slice(1))?.scrollIntoView({ behavior: "smooth", block: "start" }));
-            } else {
-                window.scrollTo({ top: 0, behavior: "smooth" });
-            }
-        }
-
-        window.addEventListener("hashchange", renderPageRoute);
-        renderPageRoute();
 
         const hoverMotion = window.matchMedia("(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)");
         if (hoverMotion.matches) {
