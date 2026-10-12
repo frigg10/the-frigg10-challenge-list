@@ -639,160 +639,160 @@
                 showToast("Record sent! It has been added to the submission inbox for review.");
                 document.getElementById("pending").scrollIntoView({ behavior: "smooth", block: "start" });
             });
-
-            document.getElementById("adminLevelForm").addEventListener("submit", async event => {
-                event.preventDefault();
-                if (!isAdmin) return;
-                const formElement = event.currentTarget;
-                const values = Object.fromEntries(new FormData(formElement).entries());
-                const name = String(values.name || "").trim();
-                const rank = Number(values.rank);
-                const video = String(values.video_url || "").trim();
-                if (!name || !Number.isInteger(rank) || rank < 1 || (video && !validHttpUrl(video))) {
-                    showToast("Enter a name, a positive whole-number rank, and a valid video URL.");
-                    return;
-                }
-                const row = {
-                    id: `level-${crypto.randomUUID()}`,
-                    name,
-                    rank,
-                    level_id: String(values.level_id || "").trim(),
-                    difficulty: String(values.difficulty || "Unrated").trim() || "Unrated",
-                    creator: String(values.creator || "Unknown").trim() || "Unknown",
-                    verifier: String(values.verifier || "Frigg10").trim() || "Frigg10",
-                    description: String(values.description || "").trim(),
-                    video_url: validHttpUrl(video)
-                };
-                const { error } = await supabaseClient.from("challenge_levels").insert(row);
-                if (error) {
-                    console.error("Could not publish challenge.", error);
-                    showToast(error.code === "23505" ? "That rank is already in use. Choose another rank." : "Could not publish challenge.");
-                    return;
-                }
-                formElement.reset();
-                showToast("Challenge published.");
-                await loadBoard();
-            });
-
-            async function saveEditedLevel(event) {
-                const form = event.target.closest("form[data-level-id]");
-                if (!form || !isAdmin) return;
-                event.preventDefault();
-                const formData = new FormData(form);
-                const rank = Number(formData.get("rank"));
-                const video = String(formData.get("video_url") || "").trim();
-                if (!Number.isInteger(rank) || rank < 1 || (video && !validHttpUrl(video))) {
-                    showToast("Enter a positive whole-number rank and a valid video URL.");
-                    return;
-                }
-                const changes = {
-                    name: String(formData.get("name") || "").trim(),
-                    rank,
-                    level_id: String(formData.get("level_id") || "").trim(),
-                    difficulty: String(formData.get("difficulty") || "Unrated").trim() || "Unrated",
-                    creator: String(formData.get("creator") || "Unknown").trim() || "Unknown",
-                    verifier: String(formData.get("verifier") || "Pending").trim() || "Pending",
-                    description: String(formData.get("description") || "").trim(),
-                    video_url: validHttpUrl(video)
-                };
-                if (!changes.name) {
-                    showToast("Level name is required.");
-                    return;
-                }
-                const { error } = await supabaseClient.from("challenge_levels").update(changes).eq("id", form.dataset.levelId);
-                if (error) {
-                    console.error("Could not update challenge.", error);
-                    showToast(error.code === "23505" ? "That rank is already in use." : "Could not update challenge.");
-                    return;
-                }
-                showToast("Challenge updated.");
-                await loadBoard();
-            }
-
-            document.getElementById("adminLevelsList").addEventListener("submit", saveEditedLevel);
-
-            document.getElementById("adminLevelsList").addEventListener("click", async event => {
-                const button = event.target.closest("button[data-delete-level]");
-                if (!button || !isAdmin) return;
-                const level = levels.find(item => item.id === button.dataset.deleteLevel);
-                if (!level || !window.confirm(`Delete "${level.name}"? Its approved records will also be deleted.`)) return;
-                const { error } = await supabaseClient.from("challenge_levels").delete().eq("id", level.id);
-                if (error) {
-                    console.error("Could not delete challenge.", error);
-                    showToast("Could not delete challenge.");
-                    return;
-                }
-                showToast("Challenge deleted.");
-                await loadBoard();
-            });
-
-            async function reviewSubmission(submissionId, approve) {
-                if (!isAdmin) return;
-                const { error } = await supabaseClient.rpc("review_submission", {
-                    p_submission_id: submissionId,
-                    p_approve: approve
-                });
-                if (error) {
-                    console.error("Could not review submission.", error);
-                    showToast(error.message || "Could not update submission.");
-                    return;
-                }
-                showToast(approve ? "Submission approved and published." : "Submission rejected.");
-                await loadBoard();
-            }
-
-            document.getElementById("adminQueue").addEventListener("click", event => {
-                const button = event.target.closest("button[data-review-id]");
-                if (button) void reviewSubmission(button.dataset.reviewId, button.dataset.action === "approve");
-            });
-
-            function renderAdminQueue() {
-                const queue = document.getElementById("adminQueue");
-                document.getElementById("adminQueueCount").textContent = submissions.length;
-                queue.innerHTML = submissions.length
-                    ? submissions.map(item => {
-                        const details = item.details || {};
-                        const detailMarkup = item.type === "Level"
-                            ? `<div class="admin-card-meta">Creator: ${escapeHtml(details.creator || "Unknown")} · Difficulty: ${escapeHtml(details.difficulty || "Unrated")} · Level ID: ${escapeHtml(details.levelId || "—")}</div>
-                                ${details.description ? `<p class="section-note">${escapeHtml(details.description)}</p>` : ""}
-                                ${safeLink(details.video, "Verification video ↗")}`
-                            : `<div class="admin-card-meta">Player: ${escapeHtml(details.player_name || "Unknown")} · Completion: ${escapeHtml(details.percent || "—")}% · Challenge: ${escapeHtml(levels.find(level => level.id === details.level_id)?.name || "Unknown")}</div>
-                                ${details.note ? `<p class="section-note">${escapeHtml(details.note)}</p>` : ""}
-                                ${safeLink(details.proof_url, "Proof video ↗")}`;
-                        return `<article class="admin-card">
-                            <div class="admin-card-head"><div><div class="admin-card-title">${escapeHtml(item.title)}</div><div class="admin-card-meta">${escapeHtml(item.type)} submission · ${escapeHtml(new Date(item.created_at).toLocaleString())}</div></div><span class="pending-badge">PENDING</span></div>
-                            ${detailMarkup}
-                            <div class="admin-actions">
-                                <button class="button approve" type="button" data-review-id="${escapeHtml(item.id)}" data-action="approve">Approve &amp; publish</button>
-                                <button class="button reject" type="button" data-review-id="${escapeHtml(item.id)}" data-action="reject">Reject</button>
-                            </div>
-                        </article>`;
-                    }).join("")
-                    : '<div class="empty">The review queue is clear.</div>';
-            }
-
-            function renderAdminLevels() {
-                const list = document.getElementById("adminLevelsList");
-                list.innerHTML = levels.length
-                    ? levels.map(level => `<article class="admin-card">
-                        <div class="admin-card-head"><div><div class="admin-card-title">${escapeHtml(level.name)}</div><div class="admin-card-meta">Published at rank #${escapeHtml(level.rank)}</div></div></div>
-                        <form data-level-id="${escapeHtml(level.id)}">
-                            <div class="form-grid">
-                                <div class="field"><label>Name</label><input name="name" required maxlength="80" value="${escapeHtml(level.name)}"></div>
-                                <div class="field"><label>Rank</label><input name="rank" required type="number" min="1" step="1" value="${escapeHtml(level.rank)}"></div>
-                                <div class="field"><label>Level ID</label><input name="level_id" maxlength="40" value="${escapeHtml(level.levelId)}"></div>
-                                <div class="field"><label>Difficulty</label><input name="difficulty" maxlength="40" value="${escapeHtml(level.difficulty)}"></div>
-                                <div class="field"><label>Creator</label><input name="creator" maxlength="60" value="${escapeHtml(level.creator)}"></div>
-                                <div class="field"><label>Verifier</label><input name="verifier" maxlength="60" value="${escapeHtml(level.verifier)}"></div>
-                                <div class="field full"><label>Description</label><textarea name="description" maxlength="500">${escapeHtml(level.description)}</textarea></div>
-                                <div class="field full"><label>Verification video URL</label><input name="video_url" type="url" value="${escapeHtml(level.video)}"></div>
-                            </div>
-                            <div class="admin-actions"><button class="button primary" type="submit">Save changes</button><button class="button reject" type="button" data-delete-level="${escapeHtml(level.id)}">Delete challenge</button></div>
-                        </form>
-                    </article>`).join("")
-                    : '<div class="empty">No challenges to manage.</div>';
-            }
         });
+
+        document.getElementById("adminLevelForm").addEventListener("submit", async event => {
+            event.preventDefault();
+            if (!isAdmin) return;
+            const formElement = event.currentTarget;
+            const values = Object.fromEntries(new FormData(formElement).entries());
+            const name = String(values.name || "").trim();
+            const rank = Number(values.rank);
+            const video = String(values.video_url || "").trim();
+            if (!name || !Number.isInteger(rank) || rank < 1 || (video && !validHttpUrl(video))) {
+                showToast("Enter a name, a positive whole-number rank, and a valid video URL.");
+                return;
+            }
+            const row = {
+                id: `level-${crypto.randomUUID()}`,
+                name,
+                rank,
+                level_id: String(values.level_id || "").trim(),
+                difficulty: String(values.difficulty || "Unrated").trim() || "Unrated",
+                creator: String(values.creator || "Unknown").trim() || "Unknown",
+                verifier: String(values.verifier || "Frigg10").trim() || "Frigg10",
+                description: String(values.description || "").trim(),
+                video_url: validHttpUrl(video)
+            };
+            const { error } = await supabaseClient.from("challenge_levels").insert(row);
+            if (error) {
+                console.error("Could not publish challenge.", error);
+                showToast(error.code === "23505" ? "That rank is already in use. Choose another rank." : "Could not publish challenge.");
+                return;
+            }
+            formElement.reset();
+            showToast("Challenge published.");
+            await loadBoard();
+        });
+
+        async function saveEditedLevel(event) {
+            const form = event.target.closest("form[data-level-id]");
+            if (!form || !isAdmin) return;
+            event.preventDefault();
+            const formData = new FormData(form);
+            const rank = Number(formData.get("rank"));
+            const video = String(formData.get("video_url") || "").trim();
+            if (!Number.isInteger(rank) || rank < 1 || (video && !validHttpUrl(video))) {
+                showToast("Enter a positive whole-number rank and a valid video URL.");
+                return;
+            }
+            const changes = {
+                name: String(formData.get("name") || "").trim(),
+                rank,
+                level_id: String(formData.get("level_id") || "").trim(),
+                difficulty: String(formData.get("difficulty") || "Unrated").trim() || "Unrated",
+                creator: String(formData.get("creator") || "Unknown").trim() || "Unknown",
+                verifier: String(formData.get("verifier") || "Pending").trim() || "Pending",
+                description: String(formData.get("description") || "").trim(),
+                video_url: validHttpUrl(video)
+            };
+            if (!changes.name) {
+                showToast("Level name is required.");
+                return;
+            }
+            const { error } = await supabaseClient.from("challenge_levels").update(changes).eq("id", form.dataset.levelId);
+            if (error) {
+                console.error("Could not update challenge.", error);
+                showToast(error.code === "23505" ? "That rank is already in use." : "Could not update challenge.");
+                return;
+            }
+            showToast("Challenge updated.");
+            await loadBoard();
+        }
+
+        document.getElementById("adminLevelsList").addEventListener("submit", saveEditedLevel);
+
+        document.getElementById("adminLevelsList").addEventListener("click", async event => {
+            const button = event.target.closest("button[data-delete-level]");
+            if (!button || !isAdmin) return;
+            const level = levels.find(item => item.id === button.dataset.deleteLevel);
+            if (!level || !window.confirm(`Delete "${level.name}"? Its approved records will also be deleted.`)) return;
+            const { error } = await supabaseClient.from("challenge_levels").delete().eq("id", level.id);
+            if (error) {
+                console.error("Could not delete challenge.", error);
+                showToast("Could not delete challenge.");
+                return;
+            }
+            showToast("Challenge deleted.");
+            await loadBoard();
+        });
+
+        async function reviewSubmission(submissionId, approve) {
+            if (!isAdmin) return;
+            const { error } = await supabaseClient.rpc("review_submission", {
+                p_submission_id: submissionId,
+                p_approve: approve
+            });
+            if (error) {
+                console.error("Could not review submission.", error);
+                showToast(error.message || "Could not update submission.");
+                return;
+            }
+            showToast(approve ? "Submission approved and published." : "Submission rejected.");
+            await loadBoard();
+        }
+
+        document.getElementById("adminQueue").addEventListener("click", event => {
+            const button = event.target.closest("button[data-review-id]");
+            if (button) void reviewSubmission(button.dataset.reviewId, button.dataset.action === "approve");
+        });
+
+        function renderAdminQueue() {
+            const queue = document.getElementById("adminQueue");
+            document.getElementById("adminQueueCount").textContent = submissions.length;
+            queue.innerHTML = submissions.length
+                ? submissions.map(item => {
+                    const details = item.details || {};
+                    const detailMarkup = item.type === "Level"
+                        ? `<div class="admin-card-meta">Creator: ${escapeHtml(details.creator || "Unknown")} · Difficulty: ${escapeHtml(details.difficulty || "Unrated")} · Level ID: ${escapeHtml(details.levelId || "—")}</div>
+                            ${details.description ? `<p class="section-note">${escapeHtml(details.description)}</p>` : ""}
+                            ${safeLink(details.video, "Verification video ↗")}`
+                        : `<div class="admin-card-meta">Player: ${escapeHtml(details.player_name || "Unknown")} · Completion: ${escapeHtml(details.percent || "—")}% · Challenge: ${escapeHtml(levels.find(level => level.id === details.level_id)?.name || "Unknown")}</div>
+                            ${details.note ? `<p class="section-note">${escapeHtml(details.note)}</p>` : ""}
+                            ${safeLink(details.proof_url, "Proof video ↗")}`;
+                    return `<article class="admin-card">
+                        <div class="admin-card-head"><div><div class="admin-card-title">${escapeHtml(item.title)}</div><div class="admin-card-meta">${escapeHtml(item.type)} submission · ${escapeHtml(new Date(item.created_at).toLocaleString())}</div></div><span class="pending-badge">PENDING</span></div>
+                        ${detailMarkup}
+                        <div class="admin-actions">
+                            <button class="button approve" type="button" data-review-id="${escapeHtml(item.id)}" data-action="approve">Approve &amp; publish</button>
+                            <button class="button reject" type="button" data-review-id="${escapeHtml(item.id)}" data-action="reject">Reject</button>
+                        </div>
+                    </article>`;
+                }).join("")
+                : '<div class="empty">The review queue is clear.</div>';
+        }
+
+        function renderAdminLevels() {
+            const list = document.getElementById("adminLevelsList");
+            list.innerHTML = levels.length
+                ? levels.map(level => `<article class="admin-card">
+                    <div class="admin-card-head"><div><div class="admin-card-title">${escapeHtml(level.name)}</div><div class="admin-card-meta">Published at rank #${escapeHtml(level.rank)}</div></div></div>
+                    <form data-level-id="${escapeHtml(level.id)}">
+                        <div class="form-grid">
+                            <div class="field"><label>Name</label><input name="name" required maxlength="80" value="${escapeHtml(level.name)}"></div>
+                            <div class="field"><label>Rank</label><input name="rank" required type="number" min="1" step="1" value="${escapeHtml(level.rank)}"></div>
+                            <div class="field"><label>Level ID</label><input name="level_id" maxlength="40" value="${escapeHtml(level.levelId)}"></div>
+                            <div class="field"><label>Difficulty</label><input name="difficulty" maxlength="40" value="${escapeHtml(level.difficulty)}"></div>
+                            <div class="field"><label>Creator</label><input name="creator" maxlength="60" value="${escapeHtml(level.creator)}"></div>
+                            <div class="field"><label>Verifier</label><input name="verifier" maxlength="60" value="${escapeHtml(level.verifier)}"></div>
+                            <div class="field full"><label>Description</label><textarea name="description" maxlength="500">${escapeHtml(level.description)}</textarea></div>
+                            <div class="field full"><label>Verification video URL</label><input name="video_url" type="url" value="${escapeHtml(level.video)}"></div>
+                        </div>
+                        <div class="admin-actions"><button class="button primary" type="submit">Save changes</button><button class="button reject" type="button" data-delete-level="${escapeHtml(level.id)}">Delete challenge</button></div>
+                    </form>
+                </article>`).join("")
+                : '<div class="empty">No challenges to manage.</div>';
+        }
 
         const dialog = document.getElementById("profileDialog");
         const profileContents = document.getElementById("profileContents");
@@ -889,7 +889,7 @@
             void loadBoard();
         });
         supabaseClient.auth.getSession().then(({ data, error }) => {
-            if (error) { 
+            if (error) {
                 console.error("Could not restore the Supabase session.", error);
                 showToast("Could not restore your sign-in session.");
             }
